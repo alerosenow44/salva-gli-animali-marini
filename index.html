@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salva il Mare - Gioco</title>
+    <style>
+        /* CSS STYLING */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #e0f7fa;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #game-container {
+            width: 800px;
+            height: 500px;
+            margin: 20px auto;
+            position: relative;
+            background-color: #b2ebf2;
+            border: 4px solid #006064;
+            overflow: hidden;
+        }
+
+        #player {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: #006064;
+            border-radius: 50%;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        .trash {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            z-index: 5;
+        }
+
+        .plastic {
+            background-color: #4CAF50; /* Verde plastica */
+        }
+
+        .oil {
+            background-color: #000000; /* Nero petrolio */
+        }
+
+        .turtle {
+            position: absolute;
+            width: 40px;
+            height: 25px;
+            background-color: #8BC34A; /* Verde tartaruga */
+            border-radius: 50% 50% 40% 40%;
+            z-index: 7;
+        }
+
+        #score-display {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            color: #006064;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        #lives-display {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            color: #006064;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 131, 143, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 20;
+        }
+
+        #start-screen h1 {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        #start-screen p {
+            font-size: 18px;
+            margin: 5px 0;
+            text-align: center;
+        }
+
+        #start-button {
+            margin-top: 20px;
+            padding: 10px 30px;
+            font-size: 18px;
+            background-color: #FFEB3B;
+            color: #006064;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 96, 100, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 20;
+        }
+
+        #game-over h1 {
+            font-size: 40px;
+            margin-bottom: 20px;
+        }
+
+        #final-score {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        #restart-button {
+            padding: 10px 30px;
+            font-size: 18px;
+            background-color: #FFEB3B;
+            color: #006064;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="player"></div>
+        <div id="score-display">Punteggio: 0</div>
+        <div id="lives-display">Vite: 3</div>
+
+        <!-- Schermata iniziale -->
+        <div id="start-screen">
+            <h1>Salva il Mare</h1>
+            <p>Usa le frecce ← → ↑ ↓ per muoverti</p>
+            <p>Raccogli la spazzatura per guadagnare punti</p>
+            <p>Salva le tartarughe per bonus extra!</p>
+            <button id="start-button">INIZIA GIOCO</button>
+        </div>
+
+        <!-- Schermata game over -->
+        <div id="game-over">
+            <h1>GAME OVER</h1>
+            <div id="final-score">Punteggio: 0</div>
+            <button id="restart-button">RIGIOCA</button>
+        </div>
+    </div>
+
+    <script>
+        // VARIABILI DEL GIOCO
+        const player = document.getElementById('player');
+        const gameContainer = document.getElementById('game-container');
+        const scoreDisplay = document.getElementById('score-display');
+        const livesDisplay = document.getElementById('lives-display');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const startButton = document.getElementById('start-button');
+        const restartButton = document.getElementById('restart-button');
+
+        let playerX = 375;
+        let playerY = 400;
+        let score = 0;
+        let lives = 3;
+        let gameSpeed = 2;
+        let gameRunning = false;
+        let trashElements = [];
+        let turtleElements = [];
+        let keysPressed = {};
+
+        // MOVIMENTO DEL GIOCATORE
+        function updatePlayerPosition() {
+            const moveSpeed = 5;
+
+            if (keysPressed['ArrowLeft'] && playerX > 0) {
+                playerX -= moveSpeed;
+            }
+            if (keysPressed['ArrowRight'] && playerX < gameContainer.offsetWidth - player.offsetWidth) {
+                playerX += moveSpeed;
+            }
+            if (keysPressed['ArrowUp'] && playerY > 0) {
+                playerY -= moveSpeed;
+            }
+            if (keysPressed['ArrowDown'] && playerY < gameContainer.offsetHeight - player.offsetHeight) {
+                playerY += moveSpeed;
+            }
+
+            player.style.left = playerX + 'px';
+            player.style.top = playerY + 'px';
+        }
+
+        // GESTIONE TASTI
+        document.addEventListener('keydown', (e) => {
+            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                keysPressed[e.key] = true;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                keysPressed[e.key] = false;
+            }
+        });
+
+        // CREA SPAZZATURA
+        function createTrash() {
+            if (!gameRunning) return;
+
+            const trashTypes = ['plastic', 'oil'];
+            const trashType = trashTypes[Math.floor(Math.random() * trashTypes.length)];
+            
+            const trash = document.createElement('div');
+            trash.className = `trash ${trashType}`;
+            trash.style.left = Math.random() * (gameContainer.offsetWidth - 30) + 'px';
+            trash.style.top = '-30px';
+            gameContainer.appendChild(trash);
+            trashElements.push(trash);
+        }
+
+        // CREA TARTARUGHE
+        function createTurtle() {
+            if (!gameRunning) return;
+
+            const turtle = document.createElement('div');
+            turtle.className = 'turtle';
+            turtle.style.left = Math.random() * (gameContainer.offsetWidth - 40) + 'px';
+            turtle.style.top = '-40px';
+            gameContainer.appendChild(turtle);
+            turtleElements.push(turtle);
+        }
+
+        // MUOVI OGGETTI
+        function moveObjects() {
+            // Muovi spazzatura
+            trashElements.forEach((trash, index) => {
+                const currentTop = parseInt(trash.style.top);
+                trash.style.top = (currentTop + gameSpeed) + 'px';
+
+                // Controlla se il giocatore ha raccolto la spazzatura
+                if (checkCollision(player, trash)) {
+                    trash.remove();
+                    trashElements.splice(index, 1);
+                    score += trash.classList.contains('plastic') ? 10 : 20;
+                    scoreDisplay.textContent = `Punteggio: ${score}`;
+                }
+
+                // Controlla se la spazzatura è uscita dallo schermo
+                if (currentTop > gameContainer.offsetHeight) {
+                    trash.remove();
+                    trashElements.splice(index, 1);
+                    lives--;
+                    livesDisplay.textContent = `Vite: ${lives}`;
+                    if (lives <= 0) {
+                        endGame();
+                    }
+                }
+            });
+
+            // Muovi tartarughe
+            turtleElements.forEach((turtle, index) => {
+                const currentTop = parseInt(turtle.style.top);
+                const currentLeft = parseInt(turtle.style.left);
+                turtle.style.top = (currentTop + gameSpeed - 1) + 'px';
+                turtle.style.left = (currentLeft + Math.sin(currentTop / 50) * 2) + 'px';
+
+                // Controlla se il giocatore ha salvato la tartaruga
+                if (checkCollision(player, turtle)) {
+                    turtle.remove();
+                    turtleElements.splice(index, 1);
+                    score += 50;
+                    scoreDisplay.textContent = `Punteggio: ${score}`;
+                }
+
+                // Controlla se la tartaruga è uscita dallo schermo
+                if (currentTop > gameContainer.offsetHeight) {
+                    turtle.remove();
+                    turtleElements.splice(index, 1);
+                }
+            });
+        }
+
+        // CONTROLLA COLLISIONI
+        function checkCollision(element1, element2) {
+            const rect1 = element1.getBoundingClientRect();
+            const rect2 = element2.getBoundingClientRect();
+
+            return !(
+                rect1.right < rect2.left || 
+                rect1.left > rect2.right || 
+                rect1.bottom < rect2.top || 
+                rect1.top > rect2.bottom
+            );
+        }
+
+        // GAME LOOP
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            updatePlayerPosition();
+            moveObjects();
+
+            // Aumenta difficoltà gradualmente
+            if (score > 0 && score % 500 === 0) {
+                gameSpeed += 0.2;
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // INIZIA GIOCO
+        function startGame() {
+            // Resetta tutto
+            trashElements.forEach(trash => trash.remove());
+            turtleElements.forEach(turtle => turtle.remove());
+            trashElements = [];
+            turtleElements = [];
+            
+            playerX = 375;
+            playerY = 400;
+            player.style.left = playerX + 'px';
+            player.style.top = playerY + 'px';
+            
+            score = 0;
+            lives = 3;
+            gameSpeed = 2;
+            
+            scoreDisplay.textContent = `Punteggio: ${score}`;
+            livesDisplay.textContent = `Vite: ${lives}`;
+            
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            gameRunning = true;
+            
+            // Avvia generazione oggetti
+            setInterval(createTrash, 1000);
+            setInterval(createTurtle, 3000);
+            
+            // Avvia game loop
+            gameLoop();
+        }
+
+        // FINE GIOCO
+        function endGame() {
+            gameRunning = false;
+            finalScoreDisplay.textContent = `Punteggio: ${score}`;
+            gameOverScreen.style.display = 'flex';
+        }
+
+        // EVENT LISTENERS
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', startGame);
+    </script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: #e0f7fa;
+    overflow: hidden;
+    user-select: none;
+}
+
+#game-container {
+    width: 800px;
+    height: 500px;
+    margin: 20px auto;
+    position: relative;
+    background-color: #b2ebf2;
+    border: 4px solid #006064;
+    overflow: hidden;
+}
+
+#player {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background-color: #006064;
+    border-radius: 50%;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+.trash {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    z-index: 5;
+}
+
+.plastic {
+    background-color: #4CAF50;
+}
+
+.oil {
+    background-color: #000000;
+}
+
+.turtle {
+    position: absolute;
+    width: 40px;
+    height: 25px;
+    background-color: #8BC34A;
+    border-radius: 50% 50% 40% 40%;
+    z-index: 7;
+}
+
+#score-display {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 20px;
+    color: #006064;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+#lives-display {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 20px;
+    color: #006064;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+#start-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 131, 143, 0.9);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    z-index: 20;
+}
+
+#start-screen h1 {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+#start-screen p {
+    font-size: 18px;
+    margin: 5px 0;
+    text-align: center;
+}
+
+#start-button {
+    margin-top: 20px;
+    padding: 10px 30px;
+    font-size: 18px;
+    background-color: #FFEB3B;
+    color: #006064;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#game-over {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 96, 100, 0.9);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    z-index: 20;
+}
+
+#game-over h1 {
+    font-size: 40px;
+    margin-bottom: 20px;
+}
+
+#final-score {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+#restart-button {
+    padding: 10px 30px;
+    font-size: 18px;
+    background-color: #FFEB3B;
+    color: #006064;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
